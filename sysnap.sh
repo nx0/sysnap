@@ -1,7 +1,8 @@
 #!/bin/bash
 
 function header_top {
-	echo "<====| $1 | ====>"
+	#echo "<======| | $1 | |======>"
+	echo "------------------| $1 |------------------"
 }
 
 function header {
@@ -9,8 +10,8 @@ function header {
 }
 
 function get_hostname {
-	header "hostname"
-	hostname --fqdn | head -n 1
+	#header "hostname"
+	echo "[ `hostname --fqdn | head -n 1` ]"
 }
 
 function get_distro {
@@ -20,7 +21,10 @@ function get_distro {
 		if [ $? -eq 0 ]; then
 			case $d in
 				SuSE)
-					p_version="zypper"
+					p_version=`zypper -V 2>&1>/dev/null`
+					function check_rep {
+						echo `zypper sl | grep -v devices | grep -Ei '(yes|no)' | awk -F '|' '{ print $2 }' | sort | uniq -c`
+					}
 				;;
 				centos)
 
@@ -62,14 +66,25 @@ function get_lvm {
 	echo `lvs | grep -v "%" | awk '{ print $1 " VG: (" $2  ")" }'`
 }
 
-function get_cpu {
-	header "cpu"
-	cat /proc/cpuinfo | grep processor| wc -l
-}
 
-function get_model {
+
+function get_cpumodel {
 	header "model"
 	cat /proc/cpuinfo | grep "model name"| cut -d ":" -f 2 | sed 's/^ *//g'
+}
+
+function get_mhz {
+	header "mhz"
+	echo `cat /proc/cpuinfo | grep -i mhz | awk -F ":" '{ print $2 }'`
+}
+
+function get_cpusize {
+	echo `cat /proc/cpuinfo | grep "clflush size"| awk -F ":" '{ print $2 }'`
+}
+
+function get_cpu {
+	header "cpu"
+	echo -n "x`cat /proc/cpuinfo | grep processor| wc -l`"; echo " (`get_cpusize` bits)"
 }
 
 function get_part {
@@ -166,7 +181,7 @@ function get_messages {
 
 function get_model {
 	header "model"
-	echo `dmidecode | grep -Ei "manufacturer" | head -n 1`
+	echo `dmidecode | grep -Ei "manufacturer" | head -n 1|awk -F ":" '{ print $2 }'`
 }
 
 function user_logged {
@@ -193,9 +208,9 @@ function get_proc {
 	header "$1 running"
 	run=`ps ax| grep $1 | grep -v grep | wc -l`
 	if (( $run >= 1 )); then
-		echo "ok"
+		echo "ok $2"
 	else
-		echo " "
+		echo "no"
 	fi
 }
 
@@ -229,9 +244,23 @@ function get_bridge {
 
 function get_pmanager {
 	header "package manager"
-	$p_version -V
+	echo $p_version
 }
-echo "===== SYSTEM INFO ====="
+
+function get_repos {
+	header "repos"
+	check_rep
+}
+
+echo "	
+               _        __       
+ ___ _   _ ___(_)_ __  / _| ___  
+/ __| | | / __| | '_ \| |_ / _ \ 
+\__ \ |_| \__ \ | | | |  _| (_) |
+|___/\__, |___/_|_| |_|_|  \___/ 
+     |___/ by: FJ Valero - e: hackgo@gmail.com                      
+____________________________________________________
+"
 
 get_hostname
 get_distro
@@ -240,11 +269,13 @@ get_uptime
 tmp
 get_model
 get_pmanager
+get_repos
 
 header_top "resources"
 get_mem
 get_cpu
-get_model
+get_mhz
+get_cpumodel
 
 
 header_top "processes"
@@ -252,12 +283,14 @@ get_proc ntp
 get_proc http
 get_proc xinet
 get_proc ftpd
+get_proc vnetd "netbackup"
 
 
 header_top "packages"
 get_whereis locate
 get_whereis htop
 get_whereis rug "(zenworks package)"
+get_whereis rmt "(cintas)"
 
 
 header_top "storage"
