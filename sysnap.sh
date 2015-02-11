@@ -252,6 +252,11 @@ function get_repos {
 	check_rep
 }
 
+function get_storage {
+	header "free space (mapper/sda)"
+	echo `df -Ph | column -t | grep -Ei "mapper|sda"| awk '{ print $1 " (" $4 ")" }'`
+}
+
 echo "	
                _        __       
  ___ _   _ ___(_)_ __  / _| ___  
@@ -297,6 +302,7 @@ header_top "storage"
 get_mount
 #echo "LVM: "
 get_lvm
+get_storage
 
 
 header_top "users"
