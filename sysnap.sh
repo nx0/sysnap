@@ -171,7 +171,7 @@ function get_dmesg {
 
 function get_cluster {
 	header "cluster"
-	cluster=`ls /etc/init.d/ | grep -Ei "corosync|heartbeat|openais" | head -n 1`
+	cluster=`ls /etc/init.d/ | grep -Ei "cman|corosync|heartbeat|openais" | head -n 1`
 	case $cluster in
 		corosync)
 			echo $cluster
@@ -194,7 +194,7 @@ function get_messages {
 }
 
 function get_model {
-	header "model"
+	header "vendor"
 	#echo `dmidecode | grep -Ei "manufacturer" | head -n 1|awk -F ":" '{ print $2 }'`
 	echo `dmidecode | grep -i vendor | head -n 1| awk -F ":" '{ print $2 }'`
 }
@@ -272,6 +272,39 @@ function get_storage {
 	echo `df -Ph | column -t | grep -Ei "mapper|sda"| awk '{ print $1 " (" $4 ")" }'`
 }
 
+function get_storagefree {
+	header "disk free"
+	echo `df -Pk | column -t | grep -Ei "mapper|sda"| awk '{ SUM += $4; print SUM/1024/1024 "G" }'| tail -n 1`
+}
+
+function get_storagetotal {
+	header "disk total"
+	echo `df -Pk | column -t | grep -Ei "mapper|sda"| awk '{ SUM += $2; print SUM/1024/1024 "G" }'| tail -n 1`
+}
+
+function get_cpucores {
+	header "cpucores"
+	ncore=$(cat /proc/cpuinfo | grep "cores"| wc -l) ; core=$(grep cores /proc/cpuinfo | awk -F ":" '{ print $2 }' | head -n 1); let c="$ncore*$core"
+	echo $c
+}
+
+function get_cpufree {
+	header "cpufree"
+	us=`grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage }'`; let xxx=100-`echo $us|cut -d "," -f1`
+	echo "$xxx%"
+}
+
+function get_bonding {
+	header "network redundancy"
+	active=`ls /proc/net/bonding/ | wc -l`
+	if [ $active -gt 0 ]; then
+		echo "ok"
+	else
+		echo "not present"
+	fi
+}
+
+if [ "$2" != "--nobanner" ]; then
 echo "	
                _        __       
  ___ _   _ ___(_)_ __  / _| ___  
@@ -281,7 +314,12 @@ echo "
      |___/ by: FJ Valero - e: hackgo@gmail.com                      
 ____________________________________________________
 "
+fi
 
+
+case $1 in 
+
+	"--all")
 get_hostname
 get_distro
 get_kernel
@@ -295,8 +333,10 @@ get_repos
 header_top "resources"
 get_mem
 get_cpu
+get_cpucores
 get_mhz
 get_cpumodel
+get_cpufree
 
 
 header_top "processes"
@@ -323,6 +363,8 @@ header_top "storage"
 get_mount
 get_lvm
 get_storage
+get_storagetotal
+get_storagefree
 
 
 header_top "users"
@@ -355,7 +397,7 @@ get_hosts
 get_bridge
 get_netw
 get_iface
-
+get_bonding
 
 header_top "system activity"
 get_last
@@ -363,3 +405,23 @@ get_lastlog
 get_dmesg
 get_messages
 user_logged
+
+;;
+	"--executive")
+		get_hostname
+		get_distro
+		get_cpumodel
+		get_model
+		get_cpu
+		get_cpucores
+		get_storagefree
+		get_storagetotal
+		get_cpufree 
+		get_kernel
+		get_bonding
+		get_cluster
+
+;;
+	*)
+		echo "options: --all, --executive"
+esac
