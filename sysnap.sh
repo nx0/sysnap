@@ -34,6 +34,15 @@ function get_distro {
 					function check_rep {
 						echo `zypper sl | grep -v devices | grep -Ei '(yes|no)' | awk -F '|' '{ print $2 }' | sort | uniq -c`
 					}
+
+					function check_r_h {
+						echo n |zypper if nmap 2>&1>/dev/null 2>/dev/null
+						if [ $? -eq 255 ]; then
+							echo "no"
+						else
+							echo "yes"
+						fi
+					}
 				;;
 				centos)
 
@@ -60,7 +69,7 @@ function get_kernel {
 	uname -r
 }
 
-function tmp {
+function get_tmp {
 	header "strange files in /tmp (sh, exe)"
 	find /tmp/ -regextype posix-egrep -regex ".*\.(sh|exe)$" | wc -l
 }
@@ -105,6 +114,11 @@ function get_mem {
 	header "memory"
 	memtotal=`cat /proc/meminfo | head -n 1 | awk '{ print $2 }'`; let t=$memtotal/1000/1000
 	echo "$t GB"
+}
+
+function get_memperc {
+	header "free memory"
+	echo `grep -E "MemTotal|MemFree|^Cached:" /proc/meminfo | awk -F ":" '{ print $2 }' | tr -d "kB" | tr -d " "` | awk '{ FREE=$2+$3; print FREE/$1*100 "%" }'	
 }
 
 function get_user {
@@ -318,6 +332,11 @@ function get_bonding {
 	fi
 }
 
+function get_repohealth {
+		header "repo updateable"
+		check_r_h
+	}
+
 if [ "$2" != "--nobanner" ]; then
 echo "	
                _        __       
@@ -338,11 +357,11 @@ get_hostname
 get_distro
 get_kernel
 get_uptime
-tmp
+get_tmp
 get_model
 get_pmanager
 get_repos
-
+get_repohealth
 
 header_top "resources"
 get_mem
@@ -364,6 +383,7 @@ get_proc nscd "name cache daemon"
 get_proc lpd "printer daemon"
 get_proc irqbalance
 get_proc vnetd "netbackup"
+get_proc nxnode "remote access"
 
 
 header_top "packages"
@@ -430,6 +450,8 @@ user_logged
 		get_cpucores
 		get_storagepercent
 		get_cpufree 
+		get_memperc
+		get_repohealth
 		get_kernel
 		get_bonding
 		get_cluster
