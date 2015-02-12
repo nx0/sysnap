@@ -234,10 +234,10 @@ function get_hosts {
 }
 
 function get_proc {
-	header "$1 running"
+	header "$1"
 	run=`ps ax| grep $1 | grep -v grep | wc -l`
 	if (( $run >= 1 )); then
-		echo "ok $2"
+		echo "YES $2"
 	else
 		echo "no"
 	fi
@@ -372,7 +372,7 @@ get_cpumodel
 get_cpufree
 
 
-header_top "processes"
+header_top "processes running"
 get_proc ntp
 get_proc http
 get_proc xinet
@@ -383,8 +383,11 @@ get_proc nscd "name cache daemon"
 get_proc lpd "printer daemon"
 get_proc irqbalance
 get_proc vnetd "netbackup"
-get_proc nxnode "remote access"
-
+get_proc nxserver "remote access"
+get_proc mysqld
+get_proc atop
+get_proc smbd
+get_proc cups
 
 header_top "packages"
 get_whereis locate
