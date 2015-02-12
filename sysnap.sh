@@ -1,4 +1,13 @@
 #!/bin/bash
+####################################
+# VERY BASIC EURISTIC FUNCTIONS
+#
+sapserver=0
+webserver=0
+printserver=0
+####################################
+
+
 
 function header_top {
 	#echo "<======| | $1 | |======>"
@@ -70,16 +79,16 @@ function get_lvm {
 
 function get_cpumodel {
 	header "model"
-	cat /proc/cpuinfo | grep "model name"| cut -d ":" -f 2 | sed 's/^ *//g'
+	cat /proc/cpuinfo | grep "model name"| cut -d ":" -f 2 | sed 's/^ *//g' | head -n 1
 }
 
 function get_mhz {
 	header "mhz"
-	echo `cat /proc/cpuinfo | grep -i mhz | awk -F ":" '{ print $2 }'`
+	echo `cat /proc/cpuinfo | grep -i mhz | awk -F ":" '{ print $2 }' | head -n 1`
 }
 
 function get_cpusize {
-	echo `cat /proc/cpuinfo | grep "clflush size"| awk -F ":" '{ print $2 }'`
+	echo `cat /proc/cpuinfo | grep "clflush size"| awk -F ":" '{ print $2 }' | head -n 1`
 }
 
 function get_cpu {
@@ -99,7 +108,7 @@ function get_mem {
 }
 
 function get_user {
-	header "usuarios"
+	header "users"
 	cat /etc/passwd | awk -F ":" '$4 > 1000' | wc -l
 }
 
@@ -147,11 +156,16 @@ function get_limits {
 	cat /etc/security/limits.conf| grep -Ev "#" | sed '/^\s*$/d' | wc -l
 }
 
+function get_printcap {
+	header "impresion"
+	cat /etc/printcap | wc -l 
+}
+
 function get_dmesg {
 	header "dmesg error/problem/crash"
 	echo `dmesg | tail | grep -Ei "error|problem|crash"`
 	if [ !$? ]; then
-		echo ""
+		echo "-"
 	fi
 }
 
@@ -181,7 +195,8 @@ function get_messages {
 
 function get_model {
 	header "model"
-	echo `dmidecode | grep -Ei "manufacturer" | head -n 1|awk -F ":" '{ print $2 }'`
+	#echo `dmidecode | grep -Ei "manufacturer" | head -n 1|awk -F ":" '{ print $2 }'`
+	echo `dmidecode | grep -i vendor | head -n 1| awk -F ":" '{ print $2 }'`
 }
 
 function user_logged {
@@ -214,8 +229,8 @@ function get_proc {
 	fi
 }
 
-function get_xinet_serv {
-	header "xinet serv:"
+function get_xinetserv {
+	header "xinet srv (active)"
 	echo `grep -E "disable.*?=*.?no" /etc/xinetd.d/*| awk -F ":" '{ print $1 }' | awk -F "/" '{ print $NF }'`| tr " " "|"
 }
 
@@ -276,6 +291,7 @@ get_model
 get_pmanager
 get_repos
 
+
 header_top "resources"
 get_mem
 get_cpu
@@ -289,18 +305,22 @@ get_proc http
 get_proc xinet
 get_proc ftpd
 get_proc vnetd "netbackup"
+get_proc saposcol "sap"
+get_proc nscd "name cache daemon"
+get_proc lpd "printer daemon"
+get_proc irqbalance
+get_proc vnetd "netbackup"
 
 
 header_top "packages"
 get_whereis locate
 get_whereis htop
 get_whereis rug "(zenworks package)"
-get_whereis rmt "(cintas)"
+get_whereis rmt "(tape server)"
 
 
 header_top "storage"
 get_mount
-#echo "LVM: "
 get_lvm
 get_storage
 
@@ -320,6 +340,8 @@ get_access
 
 header_top "system config"
 get_limits
+get_printcap
+get_xinetserv
 
 
 header_top "cluster"
