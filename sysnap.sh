@@ -274,12 +274,26 @@ function get_storage {
 
 function get_storagefree {
 	header "disk free"
-	echo `df -Pk | column -t | grep -Ei "mapper|sda"| awk '{ SUM += $4; print SUM/1024/1024 "G" }'| tail -n 1`
+	DF=`df -Pk | column -t | grep -Ei "mapper|sda"| awk '{ SUM += $4; print SUM/1024/1024 "G" }'| tail -n 1`
+	echo $DF
 }
 
 function get_storagetotal {
 	header "disk total"
-	echo `df -Pk | column -t | grep -Ei "mapper|sda"| awk '{ SUM += $2; print SUM/1024/1024 "G" }'| tail -n 1`
+	DT=`df -Pk | column -t | grep -Ei "mapper|sda"| awk '{ SUM += $2; print SUM/1024/1024 "G" }'| tail -n 1`
+	echo $DT
+}
+
+function get_storagepercent {
+	header "disk free"
+
+	get_storagetotal 2>&1>/dev/null
+	get_storagefree 2>&1>/dev/null
+
+	DT=`echo $DT | awk -F "," '{ print $1 }'`	
+	DF=`echo $DF | awk -F "," '{ print $1 }'`	
+	TT=`awk "BEGIN{ print $DT/100 * $DF }"`
+	echo "$TT%"
 }
 
 function get_cpucores {
@@ -289,7 +303,7 @@ function get_cpucores {
 }
 
 function get_cpufree {
-	header "cpufree"
+	header "cpu free"
 	us=`grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage }'`; let xxx=100-`echo $us|cut -d "," -f1`
 	echo "$xxx%"
 }
@@ -414,13 +428,11 @@ user_logged
 		get_model
 		get_cpu
 		get_cpucores
-		get_storagefree
-		get_storagetotal
+		get_storagepercent
 		get_cpufree 
 		get_kernel
 		get_bonding
 		get_cluster
-
 ;;
 	*)
 		echo "options: --all, --executive"
