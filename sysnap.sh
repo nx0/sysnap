@@ -25,8 +25,8 @@ function get_hostname {
 
 function get_distro {
 	header "distro"
-	for d in SuSE centos debian redhat; do
-		stat /etc/$d-release 1>&2>/dev/null
+	for d in SuSE centos debian redhat os; do
+		stat /etc/$d-release 1>&2>/dev/null 2>/dev/null
 		if [ $? -eq 0 ]; then
 			case $d in
 				SuSE)
@@ -40,15 +40,19 @@ function get_distro {
 						if [ $? -eq 255 ]; then
 							echo "no"
 						else
-							echo "yes"
+							echo "YES"
 						fi
 					}
 				;;
 				centos)
 
 				;;
-				debian)
-
+				debian|os)
+					p_version=`apt-get -v | head -n 1`
+					
+					function check_r_h {
+						echo "YES"
+					}
 				;;
 				redhat)
 
@@ -57,7 +61,7 @@ function get_distro {
 					echo "Desconocida"
 			esac
 			
-			echo `lsb_release -a | tail -n 3 | cut -d ":" -f 2`
+			echo `lsb_release -a 2>/dev/null| tail -n 3 | cut -d ":" -f 2`
 			return 0
 			#cat /etc/$d-release
 		fi
@@ -312,23 +316,31 @@ function get_storagepercent {
 
 function get_cpucores {
 	header "cpucores"
-	ncore=$(cat /proc/cpuinfo | grep "cores"| wc -l) ; core=$(grep cores /proc/cpuinfo | awk -F ":" '{ print $2 }' | head -n 1); let c="$ncore*$core"
+	ncore=$(cat /proc/cpuinfo | grep "cores"| wc -l) ; core=$(grep cores /proc/cpuinfo | awk -F ":" '{ print $2 }' | head -n 1); 
+	if [ "$ncore" == "" ] ; then
+		ncore=0
+	elif [ "$core" == "" ]; then
+		core=0
+	fi
+	let c="$ncore*$core"
 	echo $c
 }
 
 function get_cpufree {
 	header "cpu free"
-	us=`grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage }'`; let xxx=100-`echo $us|cut -d "," -f1`
+	us=`grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage }'`
+	usg=`echo $us|tr "," "." | cut -d "." -f1`
+	let xxx=100-$usg
 	echo "$xxx%"
 }
 
 function get_bonding {
 	header "network redundancy"
-	active=`ls /proc/net/bonding/ | wc -l`
-	if [ $active -gt 0 ]; then
-		echo "ok"
+	active=`ls /proc/net/bonding/ 2>&1> /dev/null 2>/dev/null`
+	if [ "$active" == "0" ]; then
+		echo "YES"
 	else
-		echo "not present"
+		echo "no"
 	fi
 }
 
@@ -447,6 +459,7 @@ user_logged
 	"--executive")
 		get_hostname
 		get_distro
+		get_kernel
 		get_cpumodel
 		get_model
 		get_cpu
@@ -455,7 +468,6 @@ user_logged
 		get_cpufree 
 		get_memperc
 		get_repohealth
-		get_kernel
 		get_bonding
 		get_cluster
 ;;
