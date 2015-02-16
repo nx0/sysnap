@@ -43,6 +43,16 @@ function get_distro {
 							echo "YES"
 						fi
 					}
+					
+					# officially repos (smt)
+					function of_repos {
+						zypper sl | grep -iE "novel|SLES" | grep -v iso
+						if [ $? -eq 0 ]; then
+							echo "YES"
+						else
+							echo "no"
+						fi
+					}
 				;;
 				centos)
 
@@ -51,6 +61,10 @@ function get_distro {
 					p_version=`apt-get -v | head -n 1`
 					
 					function check_r_h {
+						echo "YES"
+					}
+
+					function of_repos {
 						echo "YES"
 					}
 				;;
@@ -66,6 +80,11 @@ function get_distro {
 			#cat /etc/$d-release
 		fi
 	done
+}
+
+function get_ofrepos {
+	header "of. repos"
+	of_repos	
 }
 
 function get_kernel {
@@ -214,7 +233,12 @@ function get_messages {
 function get_model {
 	header "vendor"
 	#echo `dmidecode | grep -Ei "manufacturer" | head -n 1|awk -F ":" '{ print $2 }'`
-	echo `dmidecode | grep -i vendor | head -n 1| awk -F ":" '{ print $2 }'`
+	get_whereis dmidecode > /dev/null
+	if [ $? -eq 0 ]; then 
+		echo `dmidecode | grep -i vendor | head -n 1| awk -F ":" '{ print $2 }'`
+	else
+		echo "--unknown--"
+	fi
 }
 
 function user_logged {
@@ -309,7 +333,8 @@ function get_storagepercent {
 	get_storagefree 2>&1>/dev/null
 
 	DT=`echo $DT | awk -F "," '{ print $1 }'`	
-	DF=`echo $DF | awk -F "," '{ print $1 }'`	
+	DF=`echo $DF | awk -F "," '{ print $1 }'`
+	# inexacto	
 	TT=`awk "BEGIN{ print $DT/100 * $DF }"`
 	echo "$TT%"
 }
@@ -467,7 +492,8 @@ user_logged
 		get_storagepercent
 		get_cpufree 
 		get_memperc
-		get_repohealth
+		#get_repohealth
+		get_ofrepos
 		get_bonding
 		get_cluster
 ;;
