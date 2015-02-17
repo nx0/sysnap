@@ -55,7 +55,9 @@ function get_distro {
 					}
 				;;
 				centos)
-
+					function of_repos {
+						echo "YES"
+					}
 				;;
 				debian|os)
 					p_version=`apt-get -v | head -n 1`
@@ -69,7 +71,9 @@ function get_distro {
 					}
 				;;
 				redhat)
-
+					function of_repos {
+						echo "YES"
+					}
 				;;
 				*)
 					echo "Desconocida"
@@ -235,7 +239,12 @@ function get_model {
 	#echo `dmidecode | grep -Ei "manufacturer" | head -n 1|awk -F ":" '{ print $2 }'`
 	get_whereis dmidecode > /dev/null
 	if [ $? -eq 0 ]; then 
-		echo `dmidecode | grep -i vendor | head -n 1| awk -F ":" '{ print $2 }'`
+		dmdeco=`dmidecode 2>/dev/null| grep -i vendor | head -n 1| awk -F ":" '{ print $2 }'`
+		if [ "$dmdeco" == "" ]; then
+			echo "--unknown--"
+		else
+			echo $dmdeco
+		fi
 	else
 		echo "--unknown--"
 	fi
@@ -310,19 +319,19 @@ function get_repos {
 }
 
 function get_storage {
-	header "free space (mapper/sda)"
-	echo `df -Ph | column -t | grep -Ei "mapper|sda"| awk '{ print $1 " (" $4 ")" }'`
+	header "free space (mapper/sda/cciss)"
+	echo `df -Ph | column -t | grep -Ei "mapper|sda|cciss"| awk '{ print $1 " (" $4 ")" }'`
 }
 
 function get_storagefree {
 	header "disk free"
-	DF=`df -Pk | column -t | grep -Ei "mapper|sda"| awk '{ SUM += $4; print SUM/1024/1024 "G" }'| tail -n 1`
+	DF=`df -Pk | column -t | grep -Ei "mapper|sda|cciss"| awk '{ SUM += $4; print SUM/1024/1024 "G" }'| tail -n 1`
 	echo $DF
 }
 
 function get_storagetotal {
 	header "disk total"
-	DT=`df -Pk | column -t | grep -Ei "mapper|sda"| awk '{ SUM += $2; print SUM/1024/1024 "G" }'| tail -n 1`
+	DT=`df -Pk | column -t | grep -Ei "mapper|sda|cciss"| awk '{ SUM += $2; print SUM/1024/1024 "G" }'| tail -n 1`
 	echo $DT
 }
 
@@ -493,6 +502,7 @@ user_logged
 		get_cpufree 
 		get_memperc
 		#get_repohealth
+		get_proc tnslsnr "oracle"
 		get_ofrepos
 		get_bonding
 		get_cluster
