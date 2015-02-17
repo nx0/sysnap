@@ -46,7 +46,7 @@ function get_distro {
 					
 					# officially repos (smt)
 					function of_repos {
-						zypper sl | grep -iE "novel|SLES" | grep -v iso
+						zypper sl | grep -iE "novel|SLES" | grep -v iso >/dev/null
 						if [ $? -eq 0 ]; then
 							echo "YES"
 						else
@@ -140,8 +140,8 @@ function get_mem {
 }
 
 function get_memperc {
-	header "free memory"
-	echo `grep -E "MemTotal|MemFree|^Cached:" /proc/meminfo | awk -F ":" '{ print $2 }' | tr -d "kB" | tr -d " "` | awk '{ FREE=$2+$3; print FREE/$1*100 "%" }'	
+	header "free memory (%)"
+	echo `grep -E "MemTotal|MemFree|^Cached:" /proc/meminfo | awk -F ":" '{ print $2 }' | tr -d "kB" | tr -d " "` | awk '{ FREE=$2+$3; print FREE/$1*100 }'	| cut -d "." -f 1
 }
 
 function get_user {
@@ -327,7 +327,7 @@ function get_storagetotal {
 }
 
 function get_storagepercent {
-	header "disk free"
+	header "disk free (%)"
 
 	get_storagetotal 2>&1>/dev/null
 	get_storagefree 2>&1>/dev/null
@@ -336,7 +336,7 @@ function get_storagepercent {
 	DF=`echo $DF | awk -F "," '{ print $1 }'`
 	# inexacto	
 	TT=`awk "BEGIN{ print $DT/100 * $DF }"`
-	echo "$TT%"
+	echo "$TT"|cut -d '.' -f 1
 }
 
 function get_cpucores {
@@ -352,11 +352,11 @@ function get_cpucores {
 }
 
 function get_cpufree {
-	header "cpu free"
+	header "cpu free (%)"
 	us=`grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage }'`
 	usg=`echo $us|tr "," "." | cut -d "." -f1`
 	let xxx=100-$usg
-	echo "$xxx%"
+	echo "$xxx"
 }
 
 function get_bonding {
