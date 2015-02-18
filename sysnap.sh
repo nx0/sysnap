@@ -383,6 +383,17 @@ function get_repohealth {
 		check_r_h
 	}
 
+function get_virt {
+	# vmare
+	header "VMWare virt"
+	vm=`lspci | grep -i vmware | wc -l`
+	if [ "$vm" -gt 0 ]; then
+		echo "YES"
+	else
+		echo "no"
+	fi
+}
+
 if [ "$2" != "--nobanner" ]; then
 echo "	
                _        __       
@@ -507,6 +518,11 @@ user_logged
 		get_bonding
 		get_cluster
 ;;
+	"-s")
+		get_distro
+		get_kernel
+		get_virt
+	;;
 	*)
 		echo "options: --all, --executive"
 esac
