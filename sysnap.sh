@@ -53,10 +53,20 @@ function get_distro {
 							echo "no"
 						fi
 					}
+
+					function check_sec_updates {
+						header "sec updates"
+						zypper pch 2>/dev/null| grep security| grep -i needed| wc -l
+					}
 				;;
 				centos)
 					function of_repos {
 						echo "YES"
+					}
+
+					function check_sec_updates {
+						header "sec updates"
+						echo "no"
 					}
 				;;
 				debian|os)
@@ -69,10 +79,21 @@ function get_distro {
 					function of_repos {
 						echo "YES"
 					}
+
+					function check_sec_updates {
+						header "sec updates"
+						echo "no"
+					}
+
 				;;
 				redhat)
 					function of_repos {
 						echo "YES"
+					}
+
+					function check_sec_updates {
+						header "sec updates"
+						echo "no"
 					}
 				;;
 				*)
@@ -517,6 +538,7 @@ user_logged
 		get_ofrepos
 		get_bonding
 		get_cluster
+		check_sec_updates
 ;;
 	"-s")
 		get_distro
