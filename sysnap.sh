@@ -362,8 +362,8 @@ function get_storagepercent {
 	get_storagetotal 2>&1>/dev/null
 	get_storagefree 2>&1>/dev/null
 
-	DT=`echo $DT | awk -F "," '{ print $1 }'`	
-	DF=`echo $DF | awk -F "," '{ print $1 }'`
+	DT=`echo $DT | tr "," "." | awk -F "." '{ print $1 }'`
+        DF=`echo $DF | tr "," "." | awk -F "." '{ print $1 }'`
 	# inexacto	
 	TT=`awk "BEGIN{ print $DT/100 * $DF }"`
 	echo "$TT"|cut -d '.' -f 1
