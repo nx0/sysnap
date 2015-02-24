@@ -362,11 +362,13 @@ function get_storagepercent {
 	get_storagetotal 2>&1>/dev/null
 	get_storagefree 2>&1>/dev/null
 
-	DT=`echo $DT | tr "," "." | awk -F "." '{ print $1 }'`
-        DF=`echo $DF | tr "," "." | awk -F "." '{ print $1 }'`
-	# inexacto	
-	TT=`awk "BEGIN{ print $DT/100 * $DF }"`
-	echo "$TT"|cut -d '.' -f 1
+	TD=`df -Pk | column -t | grep -Ei "mapper|sda|cciss"| wc -l`
+        TT=`df -hP | awk '{ print $5 }' | grep -E "^[1-9]" | tr -d "%"`
+
+        let df=$TT/$TD
+        let df=100-$df
+
+        echo $df
 }
 
 function get_cpucores {
