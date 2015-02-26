@@ -23,88 +23,106 @@ function get_hostname {
 	echo "[ `hostname --fqdn | head -n 1` ]"
 }
 
+function l_release {
+	dist=`lsb_release -a 2>/dev/null| tail -n 3 | cut -d ":" -f 2`
+	if [ $? -eq 0 ]; then
+		echo `echo $dist`
+	else
+		echo "--- unknown ---"
+	fi
+}
+
 function get_distro {
 	header "distro"
-	for d in SuSE centos debian redhat os; do
-		stat /etc/$d-release 1>&2>/dev/null 2>/dev/null
-		if [ $? -eq 0 ]; then
-			case $d in
-				SuSE)
-					p_version=`zypper -V 2>&1>/dev/null`
-					function check_rep {
-						echo `zypper sl | grep -v devices | grep -Ei '(yes|no)' | awk -F '|' '{ print $2 }' | sort | uniq -c`
+	d=`lsb_release -i -s`
+		case $d in
+			"SUSE LINUX")
+				p_version=`zypper -V 2>&1>/dev/null`
+				function check_rep {
+				echo `zypper sl | grep -v devices | grep -Ei '(yes|no)' | awk -F '|' '{ print $2 }' | sort | uniq -c`
 					}
 
-					function check_r_h {
-						echo n |zypper if nmap 2>&1>/dev/null 2>/dev/null
-						if [ $? -eq 255 ]; then
-							echo "no"
-						else
-							echo "YES"
-						fi
-					}
+				function check_r_h {
+					echo n |zypper if nmap 2>&1>/dev/null 2>/dev/null
+					if [ $? -eq 255 ]; then
+						echo "no"
+					else
+						echo "YES"
+					fi
+				}
 					
-					# officially repos (smt)
-					function of_repos {
-						zypper sl | grep -iE "novel|SLES" | grep -v iso >/dev/null
-						if [ $? -eq 0 ]; then
-							echo "YES"
-						else
-							echo "no"
-						fi
-					}
-
-					function check_sec_updates {
-						header "sec updates"
-						zypper pch 2>/dev/null| grep security| grep -i needed| wc -l
-					}
-				;;
-				centos)
-					function of_repos {
+				# officially repos (smt)
+				function of_repos {
+					zypper sl | grep -iE "novel|SLES" | grep -v iso >/dev/null
+					if [ $? -eq 0 ]; then
 						echo "YES"
-					}
-
-					function check_sec_updates {
-						header "sec updates"
+					else
 						echo "no"
-					}
-				;;
-				debian|os)
-					p_version=`apt-get -v | head -n 1`
+					fi
+				}
+
+				function check_sec_updates {
+					header "sec updates"
+					zypper pch 2>/dev/null| grep security| grep -i needed| wc -l
+				}
+			;;
+			centos)
+				function of_repos {
+					echo "YES"
+				}
+
+				function check_sec_updates {
+					header "sec updates"
+					echo "no"
+				}
+			;;
+			debian|Ubuntu)
+				p_version=`apt-get -v | head -n 1`
 					
-					function check_r_h {
-						echo "YES"
-					}
+				function check_r_h {
+					echo "YES"
+				}
 
-					function of_repos {
-						echo "YES"
-					}
+				function of_repos {
+					echo "YES"
+				}
 
-					function check_sec_updates {
-						header "sec updates"
-						echo "no"
-					}
+				function check_sec_updates {
+					header "sec updates"
+					echo "no"
+				}
+			;;
+			RedHatEnterpriseES)
+				function check_r_h {
+					echo "YES"
+				}
+				function of_repos {
+					echo "YES"
+				}
 
-				;;
-				redhat)
-					function of_repos {
-						echo "YES"
-					}
+				function check_sec_updates {
+					header "sec updates"
+					echo "no"
+				}
+			;;
+			*)
+				function check_r_h {
+					echo "YES"
+				}
 
-					function check_sec_updates {
-						header "sec updates"
-						echo "no"
-					}
-				;;
-				*)
-					echo "Desconocida"
-			esac
+				function of_repos {
+					echo "YES"
+				}
+
+				function check_sec_updates {
+					header "sec updates"
+					echo "no"
+				}
+	esac
 			
-			echo `lsb_release -a 2>/dev/null| tail -n 3 | cut -d ":" -f 2`
-			return 0
-			#cat /etc/$d-release
-		fi
-	done
+	#echo `lsb_release -a 2>/dev/null| tail -n 3 | cut -d ":" -f 2`
+	l_release
+	return 0
 }
 
 function get_ofrepos {
@@ -131,8 +149,6 @@ function get_lvm {
 	header "log. vol"
 	echo `lvs | grep -v "%" | awk '{ print $1 " VG: (" $2  ")" }'`
 }
-
-
 
 function get_cpumodel {
 	header "model"
@@ -417,6 +433,20 @@ function get_virt {
 	fi
 }
 
+########### compat test ##############
+
+case `uname -s` in
+	Linux)
+		true
+	;;
+	VMkernel)
+		exit 1
+	;;
+	*)
+		exit 1
+esac
+
+######################################
 if [ "$2" != "--nobanner" ]; then
 echo "	
                _        __       
@@ -431,8 +461,7 @@ fi
 
 
 case $1 in 
-
-	"--all")
+	--all|-a)
 get_hostname
 get_distro
 get_kernel
@@ -524,7 +553,7 @@ get_messages
 user_logged
 
 ;;
-	"--executive")
+	--executive|-e)
 		get_hostname
 		get_distro
 		get_kernel
@@ -542,11 +571,11 @@ user_logged
 		get_cluster
 		check_sec_updates
 ;;
-	"-s")
+	-s)
 		get_distro
 		get_kernel
 		get_virt
 	;;
 	*)
-		echo "options: --all, --executive"
+		echo "options: <[--all|-a], [--executive|-e]>"
 esac
