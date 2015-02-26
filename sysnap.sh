@@ -92,7 +92,7 @@ function get_distro {
 					echo "no"
 				}
 			;;
-			RedHatEnterpriseES)
+			RedHatEnterpriseES|RedHatEnterpriseServer)
 				function check_r_h {
 					echo "YES"
 				}
