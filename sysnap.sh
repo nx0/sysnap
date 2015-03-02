@@ -39,8 +39,8 @@ function get_distro {
 			"SUSE LINUX")
 				p_version=`zypper -V 2>&1>/dev/null`
 				function check_rep {
-				echo `zypper sl | grep -v devices | grep -Ei '(yes|no)' | awk -F '|' '{ print $2 }' | sort | uniq -c`
-					}
+					echo `zypper sl | grep -v devices | grep -Ei '(yes|no)' | awk -F '|' '{ print $2 }' | sort | uniq -c`
+				}
 
 				function check_r_h {
 					echo n |zypper if nmap 2>&1>/dev/null 2>/dev/null
@@ -79,6 +79,10 @@ function get_distro {
 			debian|Ubuntu)
 				p_version=`apt-get -v | head -n 1`
 					
+				function check_rep {
+					echo "YES"
+				}
+
 				function check_r_h {
 					echo "YES"
 				}
@@ -93,9 +97,14 @@ function get_distro {
 				}
 			;;
 			RedHatEnterpriseES|RedHatEnterpriseServer)
+				function check_rep {
+					echo "YES"
+				}
+
 				function check_r_h {
 					echo "YES"
 				}
+
 				function of_repos {
 					echo "YES"
 				}
@@ -182,7 +191,7 @@ function get_mem {
 
 function get_memperc {
 	header "free memory (%)"
-	echo `grep -E "MemTotal|MemFree|^Cached:" /proc/meminfo | awk -F ":" '{ print $2 }' | tr -d "kB" | tr -d " "` | awk '{ FREE=$2+$3; print FREE/$1*100 }'	| cut -d "." -f 1
+	echo `grep -E "MemTotal|MemFree|^Cached:" /proc/meminfo | awk -F ":" '{ print $2 }' | tr -d "kB" | tr -d " "` | awk '{ FREE=$2+$3; print FREE/$1*100 }'	| cut -d "." -f 1|tr "," "."
 }
 
 function get_user {
@@ -486,6 +495,8 @@ get_proc ntp
 get_proc http
 get_proc xinet
 get_proc ftpd
+get_proc nagios # monitor
+get_proc netdisco # monitor.
 get_proc vnetd "netbackup"
 get_proc saposcol "sap"
 get_proc nscd "name cache daemon"
@@ -497,6 +508,11 @@ get_proc mysqld
 get_proc atop
 get_proc smbd
 get_proc cups
+get_proc named "dns server"
+get_proc dnsmasq "dns server"
+get_proc lighttpd "web server"
+get_proc vcloud-director "vmware vcloud director"
+get_proc amavisd "antivir correo"
 
 header_top "packages"
 get_whereis locate
