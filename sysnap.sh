@@ -1,12 +1,6 @@
 #!/bin/bash
-####################################
-# VERY BASIC EURISTIC FUNCTIONS
-#
-sapserver=0
-webserver=0
-printserver=0
-####################################
-
+# TODO: Ubuntu /var/log/messages logfile
+# TODO: check if I'm root to perform the checks
 
 
 function header_top {
@@ -513,12 +507,17 @@ get_proc dnsmasq "dns server"
 get_proc lighttpd "web server"
 get_proc vcloud-director "vmware vcloud director"
 get_proc amavisd "antivir correo"
-get_proc smtp
+get_proc smtpd
+get_proc postfix "servidor de correo"
 get_proc tftp
 get_proc slapd "ldap server"
 get_proc epmd "erlang computation DNS"
 get_proc vmtoolsd "VMWare Tools"
-
+get_proc rhnsd "RedHat network updates"
+get_proc miniserv.pl "webmin"
+get_proc resmgrd "resource manager"
+get_proc pav_control_po "panda software"
+get_proc postgres
 
 header_top "packages"
 get_whereis locate
