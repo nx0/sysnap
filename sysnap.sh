@@ -387,7 +387,7 @@ function get_storagepercent {
 	get_storagetotal 2>&1>/dev/null
 	get_storagefree 2>&1>/dev/null
 
-	TD=`df -Pk | column -t | grep -Ei "mapper|sda|cciss"| wc -l`
+	TD=`df -Pk | column -t | grep -Ei "mapper|sda|cciss"|wc -l|tr -d " "`
         TT=`df -hP | awk '{ print $5 }' | grep -E "^[1-9]" | tr -d "%"`
 
         let df=$TT/$TD
@@ -513,6 +513,12 @@ get_proc dnsmasq "dns server"
 get_proc lighttpd "web server"
 get_proc vcloud-director "vmware vcloud director"
 get_proc amavisd "antivir correo"
+get_proc smtp
+get_proc tftp
+get_proc slapd "ldap server"
+get_proc epmd "erlang computation DNS"
+get_proc vmtoolsd "VMWare Tools"
+
 
 header_top "packages"
 get_whereis locate
