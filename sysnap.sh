@@ -1,7 +1,7 @@
 #!/bin/bash
 # TODO: Ubuntu /var/log/messages logfile
 # TODO: check if I'm root to perform the checks
-
+# TODO: check if the command or file exists before check/visualize it
 
 function header_top {
 	#echo "<======| | $1 | |======>"
@@ -474,6 +474,8 @@ get_model
 get_pmanager
 get_repos
 get_repohealth
+get_virt
+
 
 header_top "resources"
 get_mem
@@ -518,6 +520,18 @@ get_proc miniserv.pl "webmin"
 get_proc resmgrd "resource manager"
 get_proc pav_control_po "panda software"
 get_proc postgres
+get_proc restorecond "selinux file context daemon"
+get_proc escd "Enterprise Security Client"
+get_proc pcscd "smart card daemon"
+get_proc atd "job queue"
+get_proc auditd "audit daemon"
+get_proc certmonger "cert expiration dameon"
+get_proc mcelog "cpu error checker"
+get_proc abrtd "bug report daemon"
+get_proc acpid
+get_proc zmd "zenworks daemon"
+get_proc klzagent "tivoli monitoring agent"
+
 
 header_top "packages"
 get_whereis locate
