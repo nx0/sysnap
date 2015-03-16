@@ -436,6 +436,11 @@ function get_virt {
 	fi
 }
 
+function get_history {
+	header "strange history command"
+	history | grep -Ei "exploit|gcc" | wc -l
+}
+
 ########### compat test ##############
 
 case `uname -s` in
@@ -475,6 +480,7 @@ get_pmanager
 get_repos
 get_repohealth
 get_virt
+get_history
 
 
 header_top "resources"
