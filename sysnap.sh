@@ -18,17 +18,23 @@ function get_hostname {
 }
 
 function l_release {
-	dist=`lsb_release -a 2>/dev/null| tail -n 3 | cut -d ":" -f 2`
-	if [ $? -eq 0 ]; then
-		echo `echo $dist`
-	else
-		echo "--- unknown ---"
-	fi
+	if [ "$ALT_ID" != "true" ]; then
+                dist=`lsb_release -a 2>/dev/null| tail -n 3 | cut -d ":" -f 2`
+                echo `echo $dist`
+        else
+                echo `cat /etc/*-release| grep -E "^NAME=|^VERSION=" | cut -d "=" -f 2`
+        fi
 }
 
 function get_distro {
 	header "distro"
-	d=`lsb_release -i -s`
+	get_whereis lsb_release > /dev/null
+        if [ $? -eq 0 ]; then
+                d=`lsb_release -i -s 2>/dev/null`
+        else
+                ALT_ID=true
+                d=`cat /etc/*-release| grep -E "^NAME=" | cut -d "=" -f 2`
+        fi
 		case $d in
 			"SUSE LINUX")
 				p_version=`zypper -V 2>&1>/dev/null`
@@ -60,7 +66,17 @@ function get_distro {
 					zypper pch 2>/dev/null| grep security| grep -i needed| wc -l
 				}
 			;;
-			centos)
+			centos|Fedora)
+				p_version=`echo "yum - "; yum --version|head -n1`
+
+				function check_rep {
+					echo "YES"
+				}
+
+				function check_r_h {
+					echo "YES"
+				}
+
 				function of_repos {
 					echo "YES"
 				}
@@ -537,6 +553,11 @@ get_proc abrtd "bug report daemon"
 get_proc acpid
 get_proc zmd "zenworks daemon"
 get_proc klzagent "tivoli monitoring agent"
+get_proc nova-compute "openstack cloud controller"
+get_proc memcached "memory object caching daemon"
+get_proc qpidd "Message Broker Daemon"
+get_proc chronyd "computer clocks accuracy daemon"
+get_proc libvirtd "virtualization management system"
 
 
 header_top "packages"
