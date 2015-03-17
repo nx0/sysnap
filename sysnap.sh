@@ -287,7 +287,7 @@ function get_cluster {
 }
 
 function get_messages {
-	tail /var/log/messages | grep -E "error|problem|crash"
+	tail /var/log/messages | grep -Ei "error|problem|crash|kill"
 }
 
 function get_model {
