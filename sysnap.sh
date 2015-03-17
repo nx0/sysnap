@@ -558,6 +558,8 @@ get_proc memcached "memory object caching daemon"
 get_proc qpidd "Message Broker Daemon"
 get_proc chronyd "computer clocks accuracy daemon"
 get_proc libvirtd "virtualization management system"
+get_proc squid
+get_proc nginx
 
 
 header_top "packages"
