@@ -1,4 +1,10 @@
 # sysnap
+## [![Imgur](http://i.imgur.com/wPOEAPd.png?1)] Sysnap
+
+[sysnap][(https://img.shields.io/badge/sysnap-2.4-brightgreen.svg)]
+
+### Introduction
+
 Sysnap is a little shell script to do a snapshot of your system. It's ideally for an ummanaged/unknown systems who require 
  a quick view about their configuration/resources.
 
