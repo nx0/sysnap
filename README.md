@@ -1,6 +1,6 @@
 ## [![sysnap](http://i.imgur.com/d8PhHfz.png?1)](http://github.com) sysnap
 
-
+[![Travis CI](https://img.shields.io/badge/sysnap-2.4-brightgreen.svg)](http://github.com/sysnap)
 
 ### Introduction
 
