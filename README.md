@@ -1,5 +1,6 @@
 ## Sysnap
-[![Imgur](http://i.imgur.com/d8PhHfz.png?1)] [[sysnap][(https://img.shields.io/badge/sysnap-2.4-brightgreen.svg)]]
+[[Imgur](http://i.imgur.com/d8PhHfz.png?1)] 
+[[sysnap](https://img.shields.io/badge/sysnap-2.4-brightgreen.svg)]
 
 ### Introduction
 
