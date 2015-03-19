@@ -1,6 +1,6 @@
-## [![Travis CI](https://img.shields.io/badge/sysnap-2.4-brightgreen.svg)](https://github.com/nx0/sysnap) [![Travis CI](https://img.shields.io/badge/sysnap-2.4-brightgreen.svg)](https://github.com/nx0/sysnap)
+## [![Travis CI](https://img.shields.io/badge/sysnap-2.4-brightgreen.svg)](https://github.com/nx0/sysnap) [![Travis CI](https://img.shields.io/badge/sysnap-master.zip-blue.svg)](https://github.com/nx0/sysnap/archive/master.zip)
 
-[![Imgur](http://i.imgur.com/d8PhHfz.png?2)](http://google.es) sysnap
+[![Imgur](http://i.imgur.com/d8PhHfz.png?2)](https://github.com/) sysnap
 
 ### Introduction
 
